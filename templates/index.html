@@ -1,10 +1,24 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>The OnlineVagtplan</title>
+        <title>The LocalCinema OnlineVagtplan</title>
     </head>
     <body>
         <h1>The OnlineVagtplan of LocalCinema</h1>
         <p>This is a paragraph.</p>
+        <table>
+        <tr>
+            <th>Title</th>
+            <th>Time</th>
+            <th>Shifts</th>
+        </tr>
+        {% for show in shows %}
+        <tr>
+            <td>{{ show.title }}</td>
+            <td>{{ show.time }}</td>
+            <td>{{ show.shifts }}</td>
+        </tr>
+        {% endfor %}
+        </table>
     </body>
 </html> 
