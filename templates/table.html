@@ -1,0 +1,19 @@
+        {% if logged_in %}
+        <table>
+        <tr>
+            <th>Title</th>
+            <th>Time</th>
+            <th>Shifts</th>
+        </tr>
+        {% for show in shows %}
+        <tr>
+            <td>{{ show.title }}</td>
+            <td>{{ show.time }}</td>
+            <td>{{ show.shifts }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+        {% else %}
+        <p>You are not logged in</p>
+        {% endif %}
+
