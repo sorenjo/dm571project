@@ -50,13 +50,14 @@ class User:
             return self.name == other
 
 class Shifts:
-    pass
+    shifts = []
     
+    def insert(show, user):
+        Shifts.shifts.append((show, user))
 
 @app.route( "/" )
 def index():
-    print( session.get( "id" ) )
-    return render_template( "index.html", shows=shows, logged_in = session.get( "id" ) != None )
+    return render_template( "index.html", shows=shows, logged_in = session.get( "username" ) != None )
 
 @app.route( "/create_show", methods = [ "POST", "GET" ] )
 def create_show():
@@ -85,17 +86,23 @@ def login():
     if request.method == "POST":
         name = request.form[ "nm" ]
         pw = request.form[ "pw" ]
-        print( users )
+
         if name in users: # if user exists
-            session[ "id" ] = users[ name ].id
+            session[ "username" ] = name
         return redirect( "/" )
     else:
         return render_template( "login.html" )
 
 @app.route( "/logout" )
 def logout():
-    session[ "id" ] = None
+    session[ "username" ] = None
     return redirect( "/" )
+
+@app.route( "/take_shift" )
+def take_shift():
+    if not session[ "username" ]:
+        return redirect("/")
+    return render_template( "take_shift.html" )
 
 if __name__ == "__main__":
     app.run( debug=True )
