@@ -104,5 +104,9 @@ def take_shift():
         return redirect("/")
     return render_template( "take_shift.html" )
 
+@app.route( "/my_shifts" )
+def my_shifts():
+    return render_template( "my_shifts.html" )
+
 if __name__ == "__main__":
     app.run( debug=True )
