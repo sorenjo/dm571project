@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-from flask import Flask
-from flask import render_template, request, redirect
-# from flask_login import LoginManager
+from flask import Flask, render_template, request, redirect, session
 import datetime
 
 app = Flask( __name__ )
@@ -28,14 +26,14 @@ class Show:
         return str( self )
 
 class User:
-    next_id = 0
+    next_id = 1
     def __init__( self, name, password, is_super ):
         self.name = name
         self.password = password 
         self.shifts = []
         self.is_super = is_super
-        self.id = next_id
-        next_id += 1
+        self.id = self.next_id
+        self.next_id += 1
 
     def list_shifts( self ):
         global shows
@@ -44,11 +42,21 @@ class User:
             if self in show.shifts: 
                 l.append( show )
         return l
+
+    def __eq__( self, other ):
+        if type( other ) is int:
+            return self.id == other
+        elif type( other ) is str:
+            return self.name == other
+
+class Shifts:
+    pass
     
 
 @app.route( "/" )
 def index():
-    return render_template( "index.html", shows=shows)
+    print( session.get( "id" ) )
+    return render_template( "index.html", shows=shows, logged_in = session.get( "id" ) != None )
 
 @app.route( "/create_show", methods = [ "POST", "GET" ] )
 def create_show():
@@ -66,7 +74,8 @@ def create_user():
     if request.method == "POST":
         name = request.form[ "nm" ]
         pw = request.form[ "pw" ]
-        users.add( name, User( name, pw ) )
+        users[ name ] = User( name, pw, False )
+        print( users ) 
         return redirect( "/" )
     else:
         return render_template( "create_user.html" )
@@ -76,11 +85,17 @@ def login():
     if request.method == "POST":
         name = request.form[ "nm" ]
         pw = request.form[ "pw" ]
+        print( users )
         if name in users: # if user exists
             session[ "id" ] = users[ name ].id
         return redirect( "/" )
     else:
         return render_template( "login.html" )
+
+@app.route( "/logout" )
+def logout():
+    session[ "id" ] = None
+    return redirect( "/" )
 
 if __name__ == "__main__":
     app.run( debug=True )
