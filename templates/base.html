@@ -11,7 +11,13 @@
             <li><a href="/login">Login</a></li>
             <li><a href="/create_show">Create Show</a></li>
             <li><a href="/my_shifts">My Shifts</a></li>
+            <li><a href="/logout">Log Out</a></li>
         </ul>
+        {% if user %}
+        <p>You are logged in as {{ user.uname }}</p>
+        {% else %}
+        <p>You are not logged in</p>
+        {% endif %}
         {% block body %}
         <h1>The LocalCinema OnlineVagtplan</h1>
         {% endblock %}

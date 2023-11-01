@@ -1,19 +1,14 @@
-        {% if logged_in %}
         <table>
         <tr>
-            <th>Title</th>
-            <th>Time</th>
-            <th>Shifts</th>
+            {% for h in th %}
+            <th>{{ h }}</th>
+            {% endfor %}
         </tr>
-        {% for show in shows %}
+        {% for r in tr %}
         <tr>
-            <td>{{ show.title }}</td>
-            <td>{{ show.time }}</td>
-            <td>{{ show.shifts }}</td>
+            {% for c in r %}
+            <td>{{ c }}</td>
+            {% endfor %}
         </tr>
         {% endfor %}
         </table>
-        {% else %}
-        <p>You are not logged in</p>
-        {% endif %}
-

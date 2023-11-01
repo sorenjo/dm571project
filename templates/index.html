@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block title %}OnlineVagtplan{% endblock %}
 {% block body %}
+{% if user %}
 {% include "table.html" %}
+{% else %}
+<p>You are not logged in</p>
+{% endif %}
 {% endblock %}
