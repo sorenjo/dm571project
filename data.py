@@ -40,36 +40,41 @@ class Users:
 
 class Shows:
     _shows = dict() 
+    id_counter = 0
     def __init( self ):
         pass
         
     class Show:
-        id_counter = 0
+
         def __init__( self, title, instant ):
             self.title = title
             self.time = instant
             self.id = self.next_id()
 
-        def next_id(self):
-            self.id_counter += 1
-            return self.id_counter
-
         def tuple( self ):
-            return ( self.title, self.time )
+            return self.title, self.time
+
+        @staticmethod
+        def next_id():
+            Shows.id_counter += 1
+            return Shows.id_counter
+
         
         def __str__( self ):
             return "\"" +  self.title + "\" " + str( self.time )
 
         def __repr__( self ):
-            return str( self )
+            return self.title
 
     def add( self, title, instant ):
         show = self.Show( title, instant )
         self._shows[ show.id ] = show
 
+
     # med alle de her funktionsaliaser er det måske en idé bare at inherite fra dict
     __contains__ = _shows.__contains__
     __getitem__ = _shows.__getitem__
+    __repr__ = _shows.__repr__
     shows = _shows.values
     get = _shows.get
 

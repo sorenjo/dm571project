@@ -13,12 +13,7 @@ shows = Shows()
 shifts = Shifts()
 
 users.add( "admin", "admin", True )
-
-class Shifts:
-    shifts = []
-    
-    def insert(show, user):
-        Shifts.shifts.append((show, user))
+shows.add( "test", 0 )
 
 def render( file, **kwargs ):
     return render_template( file, user=users.get( session.get( "user" ) ), **kwargs )
@@ -69,22 +64,36 @@ def logout():
     session[ "user" ] = None
     return redirect( "/" )
 
+# ( uid, sid ) -> ( uid, stitle, time )
 @app.route( "/my_shifts" )
 def my_shifts():
-    return render( "my_shifts.html" )
+    return render( "my_shifts.html", 
+        th=["User", "Show id"], 
+        tr=map( 
+            lambda x: ( x[0], ) + shows[ x[1] ].tuple(), 
+            shifts.get( lambda x: x[0], session[ "user" ] )
+        )
+    )
 
 @app.route( "/show_shows" )
 def show_shows():
     return render( "show_shows.html", th=["Title", "Time", "Shifts"], tr=[ s.tuple() for s in shows.shows() ] )
 
 #TODO method not allowed når man forsøger take shift
-@app.route( "/show_detail/<show_id>" )
-def show_detail( show_id, methods = [ "POST", "GET" ] ):
+@app.route( "/show_detail/<show_id>", methods = [ "POST" , "GET" ] )
+def show_detail( show_id ):
     if request.method == "POST":
-        shifts.take( session[ "user" ], show_id )
-        redirect( "/show_detail/{}".format( show_id ) )
+        shifts.take( session[ "user" ], int( show_id ) )
+        return redirect( "/show_detail/{}".format( show_id ) )
     else:
-        return render( "show_detail.html", show=shows.get( int( show_id ) ) )
+        return render( "show_detail.html", 
+            th=["User"],
+            tr=map( 
+                lambda x: ( x[0], ),
+                shifts.get( lambda x: x[1], int( show_id ) )
+            ),
+            show=shows.get( int( show_id ) )
+        )
 
 if __name__ == "__main__":
     app.run( debug=True )

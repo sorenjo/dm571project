@@ -7,6 +7,8 @@
 <form action="/show_detail/{{ show.id }}" method = "post" >
     <p><input type = "submit" value = "Take Shift"/></p>
 </form>
+<p>Show shifts</p>
+{% include "table.html" %}
 {% else %}
 <p>Error: show does not exist.</p>
 {% endif %}
