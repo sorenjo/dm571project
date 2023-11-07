@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}OnlineVagtplan{% endblock %}
+{% block body %}
+{% if show %}
+<h2>{{ show.title }}</h2>
+<p>{{ show.time }}</p>
+<form action="/show_detail/{{ show.id }}" method = "post" >
+    <p><input type = "submit" value = "Take Shift"/></p>
+</form>
+{% else %}
+<p>Error: show does not exist.</p>
+{% endif %}
+{% endblock %}

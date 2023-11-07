@@ -1,5 +1,5 @@
 class Users:
-    users = dict()
+    _users = dict()
 
     def __init__( self ):
         pass
@@ -26,19 +26,20 @@ class Users:
     # adds given user.
     # precondition: there does not already exist a user with the given username
     def add( self, name, password, is_super ):
-        self.users[ name ] = self.User( name, password, is_super )
+        self._users[ name ] = self.User( name, password, is_super )
 
     # determines if the provided username/password combination yields a valid user login
     def login( self, uname, password ):
-        u = self.users.get( uname )
+        u = self._users.get( uname )
         return True if u and u.password == password else False
 
-    __contains__ = users.__contains__
-    __getitem__ = users.__getitem__
-    get = users.get
+    # med alle de her funktionsaliaser er det måske en idé bare at inherite fra dict
+    __contains__ = _users.__contains__
+    __getitem__ = _users.__getitem__
+    get = _users.get
 
 class Shows:
-    shows = []
+    _shows = dict() 
     def __init( self ):
         pass
         
@@ -47,14 +48,12 @@ class Shows:
         def __init__( self, title, instant ):
             self.title = title
             self.time = instant
+            self.id = self.next_id()
 
-        def next_id():
-            Show.id_counter += 1
-            return Show.id_counter
+        def next_id(self):
+            self.id_counter += 1
+            return self.id_counter
 
-        def take_shift( self, user ):
-            self.shifts.append( user )
-        
         def tuple( self ):
             return ( self.title, self.time )
         
@@ -65,10 +64,24 @@ class Shows:
             return str( self )
 
     def add( self, title, instant ):
-        self.shows.append( self.Show( title, instant ) )
+        show = self.Show( title, instant )
+        self._shows[ show.id ] = show
 
-    __contains__ = shows.__contains__
-    __getitem__ = shows.__getitem__
+    # med alle de her funktionsaliaser er det måske en idé bare at inherite fra dict
+    __contains__ = _shows.__contains__
+    __getitem__ = _shows.__getitem__
+    shows = _shows.values
+    get = _shows.get
 
 
-    
+# TODO er der nogle måder det her kan gøres så det er med static variable og static metoder, så det bliver lidt en singletonclass?
+class Shifts:
+    _shifts = []
+    def __init__( self ):
+        pass
+
+    def take( self, uid, sid ):
+        self._shifts.append( ( uid, sid ) )
+
+    def get( self, key, id ):
+        return [ s for s in self._shifts if key( s ) == id ]

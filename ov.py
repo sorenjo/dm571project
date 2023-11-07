@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from flask import Flask, render_template, request, redirect, session
-from data import Users, Shows
+from data import Users, Shows, Shifts
 import datetime
 
 app = Flask( __name__ )
@@ -10,6 +10,7 @@ app.secret_key = "secret"
 
 users = Users()
 shows = Shows()
+shifts = Shifts()
 
 users.add( "admin", "admin", True )
 
@@ -24,7 +25,7 @@ def render( file, **kwargs ):
 
 @app.route( "/" )
 def index():
-    return render( "index.html", th=["Title", "Time", "Shifts"], tr=[ s.tuple() for s in shows ] )
+    return render( "index.html" )
 
 @app.route( "/create_show", methods = [ "POST", "GET" ] )
 def create_show():
@@ -68,14 +69,22 @@ def logout():
     session[ "user" ] = None
     return redirect( "/" )
 
-@app.route( "/take_shift" )
-def take_shift():
-    pass
-    return render( "take_shift.html" )
-
 @app.route( "/my_shifts" )
 def my_shifts():
     return render( "my_shifts.html" )
+
+@app.route( "/show_shows" )
+def show_shows():
+    return render( "show_shows.html", th=["Title", "Time", "Shifts"], tr=[ s.tuple() for s in shows.shows() ] )
+
+#TODO method not allowed når man forsøger take shift
+@app.route( "/show_detail/<show_id>" )
+def show_detail( show_id, methods = [ "POST", "GET" ] ):
+    if request.method == "POST":
+        shifts.take( session[ "user" ], show_id )
+        redirect( "/show_detail/{}".format( show_id ) )
+    else:
+        return render( "show_detail.html", show=shows.get( int( show_id ) ) )
 
 if __name__ == "__main__":
     app.run( debug=True )
