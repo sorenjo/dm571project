@@ -1,14 +1,19 @@
-        <table>
-        <tr>
-            {% for h in th %}
-            <th>{{ h }}</th>
-            {% endfor %}
-        </tr>
-        {% for r in tr %}
-        <tr>
-            {% for c in r %}
-            <td>{{ c }}</td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-        </table>
+<table>
+<tr>
+    {% for h in th %}
+    <th>{{ h }}</th>
+    {% endfor %}
+</tr>
+{% for r in tr %}
+<tr>
+    {% for c in r %}
+    <td>{{ c }}</td>
+    {% endfor %}
+    {% if btn %}
+        {% with l = btn.__next__() %}
+        <td><a href="{{ l[0] }}">{{ l[1] }}</a></td>
+        {% endwith %}
+    {% endif %}
+</tr>
+{% endfor %}
+</table>

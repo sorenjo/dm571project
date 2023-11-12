@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, flash
 from data import Users, Shows, Shifts
-import datetime
+from datetime import datetime
 
 app = Flask( __name__ )
 app.secret_key = "secret" 
@@ -13,7 +13,7 @@ shows = Shows()
 shifts = Shifts()
 
 users.add( "admin", "admin", True )
-shows.add( "test", 0 )
+shows.add( "test", datetime.now(), 120 )
 
 def render( file, **kwargs ):
     return render_template( file, user=users.get( session.get( "user" ) ), **kwargs )
@@ -27,10 +27,20 @@ def create_show():
     global shows
     if request.method == "POST":
         title = request.form[ "nm" ]
-        shows.add( title, datetime.datetime.now() )
-        print( shows )
-        return redirect( "/" )
-    else:
+        date_string = request.form[ "start" ]
+        length_string = request.form[ "length" ]
+        
+        try:
+            time = datetime.strptime( date_string, "%Y-%m-%d" )
+            length = int( length_string ) 
+            shows.add( title, time, length )
+
+        except ValueError:
+            flash( "Invalid date format or length" )
+            return redirect( "/create_show" )
+
+        return redirect( "/show_shows" )
+    else: # request.method == "GET":
         return render( "create_show.html" )
 
 @app.route( "/create_user", methods = [ "POST", "GET" ] )
@@ -68,7 +78,7 @@ def logout():
 @app.route( "/my_shifts" )
 def my_shifts():
     return render( "my_shifts.html", 
-        th=["User", "Show id"], 
+        th=[ "User", "Show id", "Time" ], 
         tr=map( 
             lambda x: ( x[0], ) + shows[ x[1] ].tuple(), 
             shifts.get( lambda x: x[0], session[ "user" ] )
@@ -77,9 +87,15 @@ def my_shifts():
 
 @app.route( "/show_shows" )
 def show_shows():
-    return render( "show_shows.html", th=["Title", "Time", "Shifts"], tr=[ s.tuple() for s in shows.shows() ] )
+    return render( "show_shows.html", 
+        th=[ "Title", "Time", "Show details" ], 
+        tr=[ s.tuple() for s in shows.shows() ], 
+        btn=map(
+            lambda x: ( f"/show_detail/{x.id}", x.title ),
+            shows.shows()
+        )
+    )
 
-#TODO method not allowed når man forsøger take shift
 @app.route( "/show_detail/<show_id>", methods = [ "POST" , "GET" ] )
 def show_detail( show_id ):
     if request.method == "POST":

@@ -4,8 +4,18 @@
         {% block head %}
         <title>{% block title %}The LocalCinema OnlineVagtplan{% endblock %}</title>
         {% endblock %}
+        <style>
+            ul { 
+                list-style: none;
+            }
+            li {
+                display: inline;
+                margin: 1em;
+            }
+        </style>
     </head>
     <body>
+        <h1>The LocalCinema OnlineVagtplan</h1>
         <ul>
             <li><a href="/create_user">Create User</a></li>
             <li><a href="/login">Login</a></li>
@@ -20,7 +30,6 @@
         <p>You are not logged in</p>
         {% endif %}
         {% block body %}
-        <h1>The LocalCinema OnlineVagtplan</h1>
         {% endblock %}
     </body>
 </html> 

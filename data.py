@@ -46,9 +46,10 @@ class Shows:
         
     class Show:
 
-        def __init__( self, title, instant ):
+        def __init__( self, title, instant, length ):
             self.title = title
             self.time = instant
+            self.length = length
             self.id = self.next_id()
 
         def tuple( self ):
@@ -66,8 +67,8 @@ class Shows:
         def __repr__( self ):
             return self.title
 
-    def add( self, title, instant ):
-        show = self.Show( title, instant )
+    def add( self, title, instant, length ):
+        show = self.Show( title, instant, length )
         self._shows[ show.id ] = show
 
 
