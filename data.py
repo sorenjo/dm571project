@@ -46,14 +46,15 @@ class Shows:
         
     class Show:
 
-        def __init__( self, title, instant, length ):
+        def __init__( self, title, instant, length, cap ):
             self.title = title
             self.time = instant
             self.length = length
             self.id = self.next_id()
+            self.capacity = cap
 
         def tuple( self ):
-            return self.title, self.time
+            return self.title, self.time, self.length, self.capacity, self.id
 
         @staticmethod
         def next_id():
@@ -67,8 +68,8 @@ class Shows:
         def __repr__( self ):
             return self.title
 
-    def add( self, title, instant, length ):
-        show = self.Show( title, instant, length )
+    def add( self, title, instant, length, cap ):
+        show = self.Show( title, instant, length, cap )
         self._shows[ show.id ] = show
 
 
@@ -91,3 +92,7 @@ class Shifts:
 
     def get( self, key, id ):
         return [ s for s in self._shifts if key( s ) == id ]
+
+    __contains__ = _shifts.__contains__
+    untake = _shifts.remove
+

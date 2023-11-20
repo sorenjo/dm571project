@@ -13,7 +13,7 @@ shows = Shows()
 shifts = Shifts()
 
 users.add( "admin", "admin", True )
-shows.add( "test", datetime.now(), 120 )
+shows.add( "test", datetime.now(), 120, 1 )
 
 def render( file, **kwargs ):
     return render_template( file, user=users.get( session.get( "user" ) ), **kwargs )
@@ -29,14 +29,16 @@ def create_show():
         title = request.form[ "nm" ]
         date_string = request.form[ "start" ]
         length_string = request.form[ "length" ]
+        shifts_string = request.form[ "shifts" ]
         
         try:
             time = datetime.strptime( date_string, "%Y-%m-%d" )
             length = int( length_string ) 
-            shows.add( title, time, length )
+            shifts = int( shifts_string )
+            shows.add( title, time, length, shifts )
 
         except ValueError:
-            flash( "Invalid date format or length" )
+            flash( "Invalid data input" )
             return redirect( "/create_show" )
 
         return redirect( "/show_shows" )
@@ -74,22 +76,35 @@ def logout():
     session[ "user" ] = None
     return redirect( "/" )
 
-# ( uid, sid ) -> ( uid, stitle, time )
 @app.route( "/my_shifts" )
 def my_shifts():
+    user_shifts = shifts.get( lambda x: x[0], session[ "user" ] ) 
     return render( "my_shifts.html", 
         th=[ "User", "Show id", "Time" ], 
-        tr=map( 
-            lambda x: ( x[0], ) + shows[ x[1] ].tuple(), 
-            shifts.get( lambda x: x[0], session[ "user" ] )
+        tr=map( # ( uid, sid ) -> ( uid, stitle, time )
+            lambda x: ( x[0], ) + shows[ x[1] ].tuple()[:2], 
+            user_shifts
+        ),
+        btn=map( # ( uid, sid ) -> ( href, link text )
+            lambda x: ( f"/untake/{x[1]}", "Untake Shift" ),
+            user_shifts
         )
     )
+
+@app.route( "/untake/<show_id>" )
+def untake( show_id ):
+    shifts.untake( ( session[ "user" ], int( show_id ) ) )
+    return redirect( "/my_shifts" )
 
 @app.route( "/show_shows" )
 def show_shows():
     return render( "show_shows.html", 
-        th=[ "Title", "Time", "Show details" ], 
-        tr=[ s.tuple() for s in shows.shows() ], 
+        th=[ "Title", "Time", "Length", "Shifts", "Show details" ], 
+        tr=map( 
+            lambda x: ( x.title, x.time, x.length, 
+                f"{ len( shifts.get( lambda x: x[1], x.id ) ) } / { x.capacity }" ),
+            shows.shows()
+        ),
         btn=map(
             lambda x: ( f"/show_detail/{x.id}", x.title ),
             shows.shows()
@@ -102,13 +117,16 @@ def show_detail( show_id ):
         shifts.take( session[ "user" ], int( show_id ) )
         return redirect( "/show_detail/{}".format( show_id ) )
     else:
+        show = shows.get( int( show_id ) )
         return render( "show_detail.html", 
             th=["User"],
             tr=map( 
                 lambda x: ( x[0], ),
                 shifts.get( lambda x: x[1], int( show_id ) )
             ),
-            show=shows.get( int( show_id ) )
+            show=show,
+            disabled=len( shifts.get( lambda x: x[1], show.id ) ) == show.capacity or
+            ( session[ "user" ], show.id ) in shifts
         )
 
 if __name__ == "__main__":

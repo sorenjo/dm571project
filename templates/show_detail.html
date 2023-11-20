@@ -5,7 +5,7 @@
 <h2>{{ show.title }}</h2>
 <p>{{ show.time }}</p>
 <form action="/show_detail/{{ show.id }}" method = "post" >
-    <p><input type = "submit" value = "Take Shift"/></p>
+    <p><input {% if disabled %} disabled {% endif %} type = "submit" value = "Take Shift"/></p>
 </form>
 <p>Show shifts</p>
 {% include "table.html" %}
