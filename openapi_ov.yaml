@@ -8,6 +8,7 @@ info:
 tags:
 - name: Shifts
 - name: Shows
+- name: User
 paths:
   /shows:
     get:
@@ -21,43 +22,53 @@ paths:
     get:
       tags:
         - Shifts
-      summary: Get a list of shifts
+      summary: Get an array of shifts
       responses:
         "200":
           description: Success
-    post:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Shift'
+  /shifts/byUser:
+    get:
       tags:
         - Shifts
-      summary: Sign up for a shift
-      requestBody:
-        description: Sign up for a shift
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Shift"
+      summary: Get an array of shifts for the logged in user
       responses:
         "200":
           description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Shift'
+        "403":
+          description: Not logged in
   /shifts/byUser/{username}:
     get:
       tags:
         - Shifts
-      summary: Get a list of shifts for a given user
+      summary: Get an array of shifts for a given user
       parameters:
         - name: username
           in: path
-          required: True
+          required: true
           schema:
             type: string
       responses:
         "200":
           description: Success
-          
+        "404":
+          description: User not found
   /shifts/byShow/{showID}:
     get:
       tags:
         - Shifts
-      summary: Get a list of shifts for a given show
+      summary: Get an array of shifts for a given show
       parameters:
         - name: showID
           in: path
@@ -67,8 +78,62 @@ paths:
       responses:
         "200":
           description: Success
-          
+        "400":
+          description: Invalid show id
+        "404":
+          description: Show not found
+    post:
+      tags:
+        - Shifts
+      summary: Sign up for a shift
+      parameters:
+      - name: showID
+        in: path
+        required: true
+        schema: 
+          type: integer
+      responses:
+        "200":
+          description: Success
+        "403":
+          description: Not logged in
+    delete:
+      tags:
+        - Shifts
+      summary: Delete a shift for the logged in user on the given show
+      parameters:
+      - name: showID
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Success
+        "403":
+          description: Not logged in
+  /login:
+    get:
+      tags:
+        - User
+      summary: Login a user
+      responses:
+        "200":
+          description: Success
+  /logout:
+    get:
+      tags:
+      - User
+      summary: Logout a user
+      responses:
+        "200":
+          description: Success
 components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: someID
   schemas:
     Shift:
       type: object
@@ -79,4 +144,5 @@ components:
         showID:
           type: integer
           example: 3
-                  
+security:
+  - cookieAuth: []

@@ -31,7 +31,7 @@ class Users:
     # determines if the provided username/password combination yields a valid user login
     def login( self, uname, password ):
         u = self._users.get( uname )
-        return True if u and u.password == password else False
+        return u and u.password == password 
 
     # med alle de her funktionsaliaser er det måske en idé bare at inherite fra dict
     __contains__ = _users.__contains__
