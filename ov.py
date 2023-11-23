@@ -13,7 +13,7 @@ shows = Shows()
 shifts = Shifts()
 
 users.add( "admin", "admin", True )
-shows.add( "test", datetime.now(), 120, 1 )
+shows.add( "test", datetime.now(), 120, 3 )
 
 def render( file, **kwargs ):
     return render_template( file, user=users.get( session.get( "user" ) ), **kwargs )
@@ -24,53 +24,55 @@ def index():
 
 @app.route( "/create_show", methods = [ "POST", "GET" ] )
 def create_show():
-    global shows
-    if request.method == "POST":
-        title = request.form[ "nm" ]
-        date_string = request.form[ "startdate" ]
-        time_string = request.form[ "starttime" ]
-        length_string = request.form[ "length" ]
-        shifts_string = request.form[ "shifts" ]
-        
-        try:
-            instant = datetime.strptime( f"{date_string}T{time_string}", "%Y-%m-%dT%H:%M" )
-            length = int( length_string ) 
-            shifts = int( shifts_string )
-            shows.add( title, instant, length, shifts )
-
-        except ValueError:
-            flash( "Invalid data input" )
-            return redirect( "/create_show" )
-
-        return redirect( "/show_shows" )
-    else: # request.method == "GET":
+    if request.method == "GET":
         return render( "create_show.html" )
+
+    # else request.method == "POST":
+    title = request.form[ "nm" ]
+    date_string = request.form[ "startdate" ]
+    time_string = request.form[ "starttime" ]
+    length_string = request.form[ "length" ]
+    shifts_string = request.form[ "shifts" ]
+    
+    try:
+        instant = datetime.strptime( f"{date_string}T{time_string}", "%Y-%m-%dT%H:%M" )
+        length = int( length_string ) 
+        shifts = int( shifts_string )
+        shows.add( title, instant, length, shifts )
+
+    except ValueError:
+        flash( "Invalid data input" )
+        return redirect( "/create_show" )
+
+    return redirect( "/show_shows" )
 
 @app.route( "/create_user", methods = [ "POST", "GET" ] )
 def create_user():
-    if request.method == "POST":
-        uname = request.form[ "nm" ]
-        pw = request.form[ "pw" ]
-        is_super = "is_super" in request.form
-        if uname not in users:
-            users.add( uname, pw, is_super )
-        else:
-            pass # TODO error user already exists with that user name
-        return redirect( "/" )
-    else:
+    if request.method == "GET":
         return render( "create_user.html" )
+    
+    # else request.method == "POST":
+    uname = request.form[ "nm" ]
+    pw = request.form[ "pw" ]
+    is_super = "is_super" in request.form
+    if uname not in users:
+        users.add( uname, pw, is_super )
+    else:
+        pass # TODO error user already exists with that user name
+    return redirect( "/" )
 
 @app.route( "/login", methods = [ "POST", "GET" ] )
 def login():
-    if request.method == "POST":
-        name = request.form[ "nm" ]
-        pw = request.form[ "pw" ]
-
-        if users.login( name, pw ):
-            session[ "user" ] = name
-        return redirect( "/" )
-    else:
+    if request.method == "GET":
         return render( "login.html" )
+
+    # else request.method == "POST":
+    name = request.form[ "nm" ]
+    pw = request.form[ "pw" ]
+
+    if users.login( name, pw ):
+        session[ "user" ] = name
+    return redirect( "/" )
 
 @app.route( "/logout" )
 def logout():
@@ -114,10 +116,7 @@ def show_shows():
 
 @app.route( "/show_detail/<show_id>", methods = [ "POST" , "GET" ] )
 def show_detail( show_id ):
-    if request.method == "POST":
-        shifts.take( session[ "user" ], int( show_id ) )
-        return redirect( "/show_detail/{}".format( show_id ) )
-    else:
+    if request.method == "GET":
         show = shows.get( int( show_id ) )
         return render( "show_detail.html", 
             th=["User"],
@@ -129,6 +128,10 @@ def show_detail( show_id ):
             disabled=len( shifts.get( lambda x: x[1], show.id ) ) == show.capacity or
             ( session[ "user" ], show.id ) in shifts
         )
+
+    # else request.method == "POST":
+    shifts.take( session[ "user" ], int( show_id ) )
+    return redirect( "/show_detail/{}".format( show_id ) )
 
 if __name__ == "__main__":
     app.run( debug=True )
