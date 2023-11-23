@@ -27,15 +27,16 @@ def create_show():
     global shows
     if request.method == "POST":
         title = request.form[ "nm" ]
-        date_string = request.form[ "start" ]
+        date_string = request.form[ "startdate" ]
+        time_string = request.form[ "starttime" ]
         length_string = request.form[ "length" ]
         shifts_string = request.form[ "shifts" ]
         
         try:
-            time = datetime.strptime( date_string, "%Y-%m-%d" )
+            instant = datetime.strptime( f"{date_string}T{time_string}", "%Y-%m-%dT%H:%M" )
             length = int( length_string ) 
             shifts = int( shifts_string )
-            shows.add( title, time, length, shifts )
+            shows.add( title, instant, length, shifts )
 
         except ValueError:
             flash( "Invalid data input" )
