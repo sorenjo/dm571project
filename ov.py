@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 from flask import Flask, render_template, request, redirect, session, flash
-from data import Users, Shows, Shifts
+from data import Data
 from datetime import datetime
 
 app = Flask( __name__ )
 app.secret_key = "secret" 
-# login_manager = LoginManager()
-# login_manager.init_app(app)
 
-users = Users()
-shows = Shows()
-shifts = Shifts()
+# users.add( "admin", "admin", True )
+# shows.add( "test", datetime.now(), 120, 3 )
 
-users.add( "admin", "admin", True )
-shows.add( "test", datetime.now(), 120, 3 )
+data = Data()
+
+data.add_user( "admin", "admin", True )
+data.add_show( "test", datetime.now(), 120, 3 )
 
 def render( file, **kwargs ):
-    return render_template( file, user=users.get( session.get( "user" ) ), **kwargs )
+    return render_template( file, user=data.get_user( session.get( "user" ) ), **kwargs )
 
 @app.route( "/" )
 def index():
@@ -38,7 +37,7 @@ def create_show():
         instant = datetime.strptime( f"{date_string}T{time_string}", "%Y-%m-%dT%H:%M" )
         length = int( length_string ) 
         shifts = int( shifts_string )
-        shows.add( title, instant, length, shifts )
+        data.add_show( title, instant, length, shifts )
 
     except ValueError:
         flash( "Invalid data input" )
@@ -55,8 +54,8 @@ def create_user():
     uname = request.form[ "nm" ]
     pw = request.form[ "pw" ]
     is_super = "is_super" in request.form
-    if uname not in users:
-        users.add( uname, pw, is_super )
+    if not data.user_exists( uname ):
+        data.add_user( uname, pw, is_super )
     else:
         pass # TODO error user already exists with that user name
     return redirect( "/" )
@@ -70,7 +69,7 @@ def login():
     name = request.form[ "nm" ]
     pw = request.form[ "pw" ]
 
-    if users.login( name, pw ):
+    if data.login( name, pw ):
         session[ "user" ] = name
     return redirect( "/" )
 
@@ -81,56 +80,40 @@ def logout():
 
 @app.route( "/my_shifts" )
 def my_shifts():
-    user_shifts = shifts.get( lambda x: x[0], session[ "user" ] ) 
+    tr, btn = data.shift_table( session[ "user" ] )
     return render( "my_shifts.html", 
         th=[ "User", "Show id", "Time" ], 
-        tr=map( # ( uid, sid ) -> ( uid, stitle, time )
-            lambda x: ( x[0], ) + shows[ x[1] ].tuple()[:2], 
-            user_shifts
-        ),
-        btn=map( # ( uid, sid ) -> ( href, link text )
-            lambda x: ( f"/untake/{x[1]}", "Untake Shift" ),
-            user_shifts
-        )
+        tr=tr,
+        btn=btn
     )
 
 @app.route( "/untake/<show_id>" )
 def untake( show_id ):
-    shifts.untake( ( session[ "user" ], int( show_id ) ) )
+    data.untake( ( session[ "user" ], int( show_id ) ) )
     return redirect( "/my_shifts" )
 
 @app.route( "/show_shows" )
 def show_shows():
+    tr, btn = data.shows_table()
     return render( "show_shows.html", 
         th=[ "Title", "Time", "Length", "Shifts", "Show details" ], 
-        tr=map( 
-            lambda x: ( x.title, x.time, x.length, 
-                f"{ len( shifts.get( lambda x: x[1], x.id ) ) } / { x.capacity }" ),
-            shows.shows()
-        ),
-        btn=map(
-            lambda x: ( f"/show_detail/{x.id}", x.title ),
-            shows.shows()
-        )
+        tr=tr,
+        btn=btn
     )
 
 @app.route( "/show_detail/<show_id>", methods = [ "POST" , "GET" ] )
 def show_detail( show_id ):
     if request.method == "GET":
-        show = shows.get( int( show_id ) )
+        tr, disabled = data.show_detail( int( show_id ), session[ "user" ] )
         return render( "show_detail.html", 
-            th=["User"],
-            tr=map( 
-                lambda x: ( x[0], ),
-                shifts.get( lambda x: x[1], int( show_id ) )
-            ),
-            show=show,
-            disabled=len( shifts.get( lambda x: x[1], show.id ) ) == show.capacity or
-            ( session[ "user" ], show.id ) in shifts
+            th=[ "User" ],
+            tr=tr,
+            show=data.get_show( int( show_id ) ),
+            disabled=disabled
         )
 
     # else request.method == "POST":
-    shifts.take( session[ "user" ], int( show_id ) )
+    data.take( session[ "user" ], int( show_id ) )
     return redirect( "/show_detail/{}".format( show_id ) )
 
 if __name__ == "__main__":
