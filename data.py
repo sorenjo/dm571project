@@ -1,4 +1,4 @@
-#!/bin/env/python3
+#!/usr/bin/env python3
 class Data:
     _instance = None
 
@@ -19,14 +19,6 @@ class Data:
             self.password = password 
             self.shifts = []
             self.is_super = is_super
-
-        def list_shifts( self ):
-            global shows
-            l = []
-            for show in shows:
-                if self in show.shifts: 
-                    l.append( show )
-            return l
 
         def __eq__( self, other ):
             if type( other ) is str:
@@ -52,12 +44,6 @@ class Data:
 
     # adds given user.
     # precondition: there does not already exist a user with the given username
-    """
-    >>> data = Data()
-    >>> data.add_user( "lars", "asdf", False )
-    >>> data.user_exists( "lars" )
-    True
-    """
     def add_user( self, name, password, is_super ):
         self._users[ name ] = self.User( name, password, is_super )
 
@@ -97,6 +83,7 @@ class Data:
         id = self.next_show_id()
         show = self.Show( title, instant, length, cap, id )
         self._shows[ show.id ] = show
+        return id
     
     def next_show_id( self ):
             self.show_id_counter += 1
@@ -132,7 +119,3 @@ class Data:
 
     def get_shift( self, key, id ):
         return [ s for s in self._shifts if key( s ) == id ]
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
-
