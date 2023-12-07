@@ -11,8 +11,8 @@ app.secret_key = "secret"
 
 data = Data()
 
-data.add_user( "admin", "admin", True )
-data.add_show( "test", datetime.now(), 120, 3 )
+# data.add_user( "admin", "admin", True )
+# data.add_show( "test", datetime.now(), 120, 3 )
 
 def render( file, **kwargs ):
     return render_template( file, user=data.get_user( session.get( "user" ) ), **kwargs )
